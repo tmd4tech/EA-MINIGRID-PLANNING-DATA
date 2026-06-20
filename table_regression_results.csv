@@ -1,0 +1,3 @@
+,R2,MAE_log
+RandomForest,0.4218,1.5255
+XGBoost,0.4992,1.4342

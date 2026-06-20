@@ -1,0 +1,3 @@
+,Accuracy,Macro_F1
+RandomForest,0.9989,0.9985
+XGBoost,0.9965,0.9541

@@ -1,0 +1,5 @@
+Viability_Tier,Cells,Mean_Solar,Mean_Pop,Median_Pop,Mean_DistRoad_km,Pct_Cells
+Tier A,549,5.55,55318.41,43986.18,0.05,0.3
+Tier B,80868,5.33,1075.06,254.76,1.29,46.1
+Tier C,81810,6.02,905.7,243.44,1.49,46.7
+Tier D,12026,5.69,17.99,2.22,14.41,6.9
