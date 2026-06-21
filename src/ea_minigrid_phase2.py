@@ -1,4 +1,3 @@
-
 # =============================================================================
 # ea_minigrid_phase2.py  —  EA-MiniGrid-Bench Experiments (2025 refresh)
 #
@@ -28,9 +27,19 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from xgboost import XGBClassifier, XGBRegressor
 
+import os, sys
+# Allow running from repo root or from inside src/.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from config import OUTPUT_DIR, RESULTS_DIR
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+os.makedirs(RESULTS_DIR, exist_ok=True)
+
 RANDOM_STATE = 42
-CSV_PATH = "/content/drive/MyDrive/EA_MiniGrid_Project/EA_MiniGrid_Bench_MASTER_FINAL.csv"
-OUT_DIR  = "/content/drive/MyDrive/EA_MiniGrid_Project/"
+# Master CSV lives in data/; figures and result tables go to results/.
+CSV_PATH = os.path.join(OUTPUT_DIR, "EA_MiniGrid_Bench_MASTER_FINAL.csv")
+OUT_DIR  = RESULTS_DIR + os.sep   # trailing sep so OUT_DIR + "name.png" works
 
 FEATURES = ["Solar_Irradiance_kWh", "Population_Count", "Dist_to_Road_m"]
 
@@ -67,8 +76,7 @@ def load_data(path=CSV_PATH):
 # [A] K-MEANS  ->  VIABILITY TIERS
 # =============================================================================
 def run_clustering(df):
-    print("
-[A] K-Means clustering...")
+    print("\n[A] K-Means clustering...")
     X = StandardScaler().fit_transform(df[FEATURES])
 
     # k-scan (full-data silhouette; sample only if very large for speed)
@@ -79,7 +87,7 @@ def run_clustering(df):
         lab = km.fit_predict(X)
         sil = silhouette_score(X, lab, sample_size=sample, random_state=RANDOM_STATE)
         rows.append({"k": k, "inertia": km.inertia_, "silhouette": sil})
-        print(f"    k={k}  inertia={km.inertia_}>12,.1f}  silhouette={sil:.4f}")
+        print(f"    k={k}  inertia={km.inertia_:>12,.1f}  silhouette={sil:.4f}")
     scan = pd.DataFrame(rows)
 
     # Final model: k=4
@@ -109,13 +117,11 @@ def profile_tiers(df):
             .round(2)
             .reindex(["Tier A", "Tier B", "Tier C", "Tier D"]))
     prof["Pct_Cells"] = (prof["Cells"] / prof["Cells"].sum() * 100).round(1)
-    print("
-    Tier profiles (re-derive narrative labels from THESE numbers):")
+    print("\n    Tier profiles (re-derive narrative labels from THESE numbers):")
     print(prof.to_string())
     # Identify the high-solar 'goldmine' tier empirically
     goldmine = prof["Mean_Solar"].idxmax()
-    print(f"
-    -> Highest-solar tier is {goldmine} "
+    print(f"\n    -> Highest-solar tier is {goldmine} "
           f"(Mean Solar={prof.loc[goldmine,'Mean_Solar']}). "
           f"This is the empirical 'Mini-Grid Goldmine' for the new data.")
     return prof
@@ -125,8 +131,7 @@ def profile_tiers(df):
 # [B] PER-COUNTRY & PER-ADMIN1 TABLES  (addresses over-aggregation critique)
 # =============================================================================
 def country_tables(df):
-    print("
-[B] Per-country breakdown...")
+    print("\n[B] Per-country breakdown...")
     by_country = (df.groupby("Country")
                   .agg(Cells=("Grid_ID", "count"),
                        Mean_Solar=("Solar_Irradiance_kWh", "mean"),
@@ -138,8 +143,7 @@ def country_tables(df):
     # Tier composition per country (the cross-border story)
     comp = (pd.crosstab(df["Country"], df["Viability_Tier"], normalize="index")
             .mul(100).round(1))
-    print("
-    Tier composition by country (% of each country's cells):")
+    print("\n    Tier composition by country (% of each country's cells):")
     print(comp.to_string())
 
     # Top admin1 units in the highest-solar tier (where to invest, by region)
@@ -148,8 +152,7 @@ def country_tables(df):
            .groupby(["Country", "Admin1_Name"]).size()
            .sort_values(ascending=False).head(15)
            .rename("Goldmine_Cells").reset_index())
-    print(f"
-    Top 15 admin1 regions in {goldmine} (high-solar) tier:")
+    print(f"\n    Top 15 admin1 regions in {goldmine} (high-solar) tier:")
     print(top.to_string(index=False))
     return by_country, comp, top
 
@@ -162,8 +165,7 @@ def supervised_regression(df):
     Population is NOT trivially recoverable from the others, so this is a real
     predictive benchmark (unlike tier-classification which re-learns clustering).
     """
-    print("
-[C1] Regression: predict log(Population) from solar, road, country...")
+    print("\n[C1] Regression: predict log(Population) from solar, road, country...")
     d = df.copy()
     d["log_pop"] = np.log1p(d["Population_Count"])
     X = pd.get_dummies(d[["Solar_Irradiance_kWh", "Dist_to_Road_m", "Country"]],
@@ -189,13 +191,12 @@ def supervised_regression(df):
 
 
 def supervised_classification(df):
-    """DISTILLATION benchmark: reproduce Tier from the 3 features.
+    """DISTILLATION benchmark: reproduce Viability Tier from the 3 features.
     NOTE: tiers were derived by K-Means on these same features, so high scores
     reflect the models re-learning the cluster geometry, NOT novel prediction.
     Framed honestly as a benchmark-task spec, per reviewer guidance.
     """
-    print("
-[C2] Classification: reproduce Tier (distillation benchmark)...")
+    print("\n[C2] Classification: reproduce Tier (distillation benchmark)...")
     X = df[FEATURES]
     y = df["Viability_Tier"]
     Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.2, stratify=y,
@@ -319,5 +320,4 @@ if __name__ == "__main__":
     comp.to_csv(OUT_DIR + "table_tier_composition.csv")
     reg.to_csv(OUT_DIR + "table_regression_results.csv")
     clf.to_csv(OUT_DIR + "table_classification_results.csv")
-    print("
-DONE. Enriched CSV + 6 result tables saved.")
+    print("\nDONE. Enriched CSV + 6 result tables saved.")
