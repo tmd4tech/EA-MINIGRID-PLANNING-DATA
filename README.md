@@ -96,7 +96,7 @@ ea-minigrid-bench/
 
 ```bash
 # 1. Clone
-git clone https://github.com/<your-org>/ea-minigrid-bench.git
+git clone https://github.com/tmd4tech/ea-minigrid-bench.git
 cd ea-minigrid-bench
 
 # 2. Create an environment and install dependencies
