@@ -1,0 +1,23 @@
+# EA-MiniGrid-Bench — Python dependencies
+# Tested on Python 3.10–3.12.
+# Version floors reflect the APIs the pipeline relies on
+# (e.g. GeoPandas >= 1.0 for union_all() and modern sjoin_nearest).
+
+# ── Core data handling ─────────────────────────────
+pandas>=2.0
+numpy>=1.24
+
+# ── Geospatial stack (pipeline only; not needed to USE the CSV) ──
+geopandas>=1.0
+rasterio>=1.3
+rasterstats>=0.19
+shapely>=2.0
+pyproj>=3.5
+
+# ── Machine learning ───────────────────────────────
+scikit-learn>=1.3
+xgboost>=2.0
+
+# ── Plotting ───────────────────────────────────────
+matplotlib>=3.7
+seaborn>=0.12
