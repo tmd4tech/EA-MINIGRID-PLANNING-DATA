@@ -59,7 +59,7 @@ the dataset from scratch (see
 ## Repository structure
 
 ```
-ea-minigrid-bench/
+EA-MINIGRID-PLANNING-DATA/
 ├── README.md
 ├── requirements.txt
 ├── data/
@@ -82,13 +82,15 @@ ea-minigrid-bench/
 │   ├── table_tier_composition.csv
 │   ├── table_regression_results.csv
 │   └── table_classification_results.csv
-└── config.py                                  # paths (edit before running)
+└── config.py                                  # path configuration (auto-detects repo root)
 ```
 
 > **Note on raw data:** the raw rasters and shapefiles (several GB) are **not**
-> included in this repository. They are freely available from their original
-> providers; see [Data sources](#data-sources) for download links and the
-> expected folder layout.
+> included in this repository — they exceed GitHub's file-size limits and are
+> redistributed only by their original providers. To rebuild the dataset, place
+> a `EA_MiniGrid_Project/` folder (see [layout](#expected-folder-layout)) at the
+> repository root; it is git-ignored, so it will never be committed. See
+> [Data sources](#data-sources) for download links.
 
 ---
 
@@ -96,8 +98,8 @@ ea-minigrid-bench/
 
 ```bash
 # 1. Clone
-git clone https://github.com/tmd4tech/ea-minigrid-bench.git
-cd ea-minigrid-bench
+git clone https://github.com/tmd4tech/EA-MINIGRID-PLANNING-DATA.git
+cd EA-MINIGRID-PLANNING-DATA
 
 # 2. Create an environment and install dependencies
 python -m venv .venv && source .venv/bin/activate      # optional
@@ -149,12 +151,13 @@ EA_MiniGrid_Project/
 ### Run order
 
 ```bash
-# Set the project root in config.py first (see below), then:
+# Place raw data in EA_MiniGrid_Project/ at the repo root (or set
+# EA_MINIGRID_DATA), then run from the repository root:
 python src/run_rwanda.py        # → EA_MiniGrid_Rwanda_Processed.csv
 python src/run_kenya.py         # → EA_MiniGrid_Kenya_Processed.csv
 python src/run_uganda.py        # → EA_MiniGrid_Uganda_Processed.csv
 python src/run_tanzania.py      # → EA_MiniGrid_Tanzania_Processed.csv
-python src/merge_master.py      # → EA_MiniGrid_Bench_MASTER_FINAL.csv
+python src/merge_master.py      # → data/EA_MiniGrid_Bench_MASTER_FINAL.csv
 ```
 
 Each country script prints per-stage row counts and a `describe()` summary, and
@@ -163,11 +166,27 @@ uniqueness across all four files.
 
 ### Configuring paths
 
-The scripts read the project root from `config.py`:
+Paths are handled by `config.py` and **require no editing in the default case**.
+By default the pipeline looks for raw data in an `EA_MiniGrid_Project/` folder at
+the repository root. Outputs are written to `data/` (master CSV) and `results/`
+(figures and tables).
+
+If your raw data lives elsewhere — for example on Google Drive in Colab — point
+the pipeline at it with the `EA_MINIGRID_DATA` environment variable instead of
+editing any code:
+
+```bash
+# Linux / Mac
+export EA_MINIGRID_DATA=/path/to/EA_MiniGrid_Project
+
+# Windows (PowerShell)
+setx EA_MINIGRID_DATA "C:\path\to\EA_MiniGrid_Project"
+```
 
 ```python
-# config.py
-PROJECT_ROOT = "/path/to/EA_MiniGrid_Project/"   # edit this
+# Google Colab — set before running any pipeline script
+import os
+os.environ["EA_MINIGRID_DATA"] = "/content/drive/MyDrive/EA_MiniGrid_Project"
 ```
 
 Per-country settings (grid cell size and UTM zone) are defined in each runner
@@ -278,11 +297,11 @@ The dataset supports several ML tasks out of the box:
 ## Citation
 
 ```bibtex
-@inproceedings{eaminigridbench2025,
+@inproceedings{eaminigridbench2026,
   title     = {EA-MiniGrid-Bench: A High-Resolution Spatial Benchmark Dataset
                for Machine Learning in East African Energy Planning},
-  author    = {Temidayo O. Akanmu, Damilare Olatunji},
-  booktitle = {Deep Learning Indaba},
+  author    = {<Authors>},
+  booktitle = {<Venue>},
   year      = {2026},
   doi       = {<INSERT ZENODO DOI>},
   url       = {<INSERT REPOSITORY URL>}
@@ -293,8 +312,9 @@ The dataset supports several ML tasks out of the box:
 
 ## License
 
-- **Dataset and code:** released under <CHOOSE A LICENSE, e.g. CC BY 4.0 for the
-  data and MIT for the code>.
+- **Dataset** (the CSV files under `data/`): Creative Commons Attribution 4.0
+  International (**CC BY 4.0**). See `LICENSE-DATA`.
+- **Code** (all `.py` files): **MIT License**. See `LICENSE`.
 - **Source data** retains the licenses of its original providers (Global Solar
   Atlas, WorldPop, OpenStreetMap/ODbL, Who's On First, UN OCHA). Please observe
   their attribution requirements when redistributing derived products.
