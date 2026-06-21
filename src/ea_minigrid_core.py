@@ -1,4 +1,3 @@
-
 # =============================================================================
 # ea_minigrid_core.py
 # Shared processing engine for EA-MiniGrid-Bench (2025 data refresh).
@@ -14,10 +13,14 @@ from rasterstats import zonal_stats
 from shapely.geometry import box
 import glob
 import os
+import sys
 import gc
 
-PROJECT_ROOT = '/content/drive/MyDrive/EA_MiniGrid_Project/'
-SOLAR_FILE   = PROJECT_ROOT + 'GHI.tif'   # one shared world raster
+# Make the repo root importable so `config.py` (which sits at the root) is
+# found whether scripts are run from the root or from inside src/.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from config import PROJECT_ROOT, SOLAR_FILE
 
 
 def find_one(folder, pattern, label):
@@ -59,13 +62,13 @@ def detect_name_column(gdf, level):
     return None
 
 
-def process_country(country_name, prefix, folder,
-                    pop_pattern, grid_size_deg, utm_epsg):
+def process_country(country_name, prefix, folder, pop_pattern,
+                    grid_size_deg, utm_epsg):
     print("=" * 60)
     print(f"  EA-MiniGrid-Bench Engine — {country_name.upper()}")
     print("=" * 60)
 
-    folder     = PROJECT_ROOT + folder
+    folder     = os.path.join(PROJECT_ROOT, folder.rstrip('/\\'))
     pop_file   = find_one(folder, pop_pattern, "population")
     infra_file = find_one(folder, '*-free.shp.zip', "road")
     admin0_fp  = os.path.join(folder, 'admin0.shp')
@@ -222,8 +225,7 @@ def process_country(country_name, prefix, folder,
     assert len(chk) > 0, "Export failed — CSV empty!"
     assert list(chk.columns) == expected, f"Schema mismatch! Got: {list(chk.columns)}"
 
-    print(f"
-VALIDATED SUCCESS! {country_name}: {len(chk):,} rows → {out_csv}")
+    print(f"\nVALIDATED SUCCESS! {country_name}: {len(chk):,} rows → {out_csv}")
     print("--- numeric sanity (confirm 2025 data) ---")
     print(chk[['Solar_Irradiance_kWh', 'Population_Count', 'Dist_to_Road_m']]
           .describe().round(2).to_string())
