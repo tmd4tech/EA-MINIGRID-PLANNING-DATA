@@ -300,11 +300,11 @@ The dataset supports several ML tasks out of the box:
 @inproceedings{eaminigridbench2026,
   title     = {EA-MiniGrid-Bench: A High-Resolution Spatial Benchmark Dataset
                for Machine Learning in East African Energy Planning},
-  author    = {<Authors>},
-  booktitle = {<Venue>},
+  author    = {Temidayo Opeoluwa Akanmu, Damilare Olatunji},
+  booktitle = {Deep Learning Indaba},
   year      = {2026},
-  doi       = {<INSERT ZENODO DOI>},
-  url       = {<INSERT REPOSITORY URL>}
+  doi       = {10.5281/zenodo.20787445},
+  url       = {https://github.com/tmd4tech/EA-MINIGRID-PLANNING-DATA}
 }
 ```
 
